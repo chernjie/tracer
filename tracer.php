@@ -14,6 +14,17 @@ class Tracer
 	const CODE_COVERAGE = 'Code Coverage';
 	const CACHE_DIR     = './';
 
+	private static $instance = null;
+	public static function instance()
+	{
+		if (empty(self::$instance))
+		{
+			$c = __CLASS__;
+			self::$instance = new $c;
+		}
+		return self::$instance;
+	}
+
 	public static function init()
 	{
 		if (array_key_exists('tracefile', $_GET)) exit( highlight_file($_GET['tracefile'], true) );
@@ -24,6 +35,7 @@ class Tracer
 				|| file_put_contents($cache, file_get_contents($_GET['mirror']));
 			exit( file_get_contents($cache) );
 		}
+		self::instance();
 		error_reporting(E_ALL|E_STRICT);
 		xdebug_start_code_coverage();
 		self::add('Environment', array('_GET'=>$_GET, '_POST'=>$_POST, '_COOKIE'=>$_COOKIE, '_SERVER'=>$_SERVER));
@@ -69,6 +81,7 @@ class Tracer
 	 */
 	private static function object2array($object, $property=null)
 	{
+		if (! is_object($object)) return $object;
 		$array = preg_replace('/\w+::__set_state/', '', var_export($object, true));
 		eval('$array = ' . $array . ';');
 		return is_null($property) ? $array : $array[$property];
@@ -129,10 +142,15 @@ class Tracer
 	/**
 	 * end tracer and display code coverage
 	 */
-	public static function out()
+	public function __destruct()
 	{
 		self::add(self::CODE_COVERAGE, self::get_code_coverage());
-		if( self::$tracer )
+		if ( PHP_SAPI == 'cli' )
+		{
+			array_walk_recursive(self::$tracer, array(__CLASS__, 'object2array'));
+			echo json_encode(self::$tracer);
+		}
+		else
 		{
 			?>
 			<ul id="code-tracer" class="tracer">
