@@ -2,7 +2,7 @@
 
 /**
  * Smartass Code tracer to help with code debuggings
- * 
+ *
  * @author chernjie
  * @example: call Tracer::init() at the beginning of script execution
  * @example: call Tracer::out() at the end of script execution
@@ -46,11 +46,17 @@ class Tracer
 				break;
 			case 'css': case '.css':
 				header('Content-Type: text/css');
+				return preg_replace('/(:|[\s]+)(url\([\'"]?)(.*)([\'"]?\))/'
+					, '\1\2?mirror=' . substr($file, 0, strrpos($file, '/')) . '/\3\4'
+					, file_get_contents($cache));
+				break;
+			case 'gif': case '.gif':
+				header('Content-Type: image/gif');
 				break;
 		}
 		return file_get_contents($cache);
 	}
-	
+
 	/**
 	 * Get code coverage with Xdebug
 	 * @link http://www.xdebug.org/docs/code_coverage
@@ -148,7 +154,7 @@ class Tracer
 			self::$tracer[$name][$key] = $value;
 		}
 	}
-	
+
 	/**
 	 * @return time since REQUEST_TIME in microseconds
 	 */
@@ -181,18 +187,20 @@ class Tracer
 			<script type="text/javascript" src="?mirror=https://raw.github.com/carhartl/jquery-cookie/master/jquery.cookie.js"></script>
 			<script type="text/javascript" src="?mirror=https://raw.github.com/jzaefferer/jquery-treeview/master/jquery.treeview.js"></script>
 			<script type="text/javascript">
-				$(document).ready(function(){
-					$("#code-tracer").treeview({collapsed: true,persist: "cookie"});
-					$('.tracefile').next().hide();
-					$('.tracefile').click(function(e){
-						$(this).data('tracefile') || $(this).data('tracefile', $(this).next().html());
-						$(this).next().toggle().load('', 'tracefile=' + $(this).data('tracefile'));
+				jQuery(document).ready(function(){
+					jQuery("#code-tracer").treeview({collapsed: true,persist: "cookie"});
+					jQuery('.tracefile').next().hide();
+					jQuery('.tracefile').click(function(e){
+						jQuery(this).data('tracefile') || jQuery(this).data('tracefile', jQuery(this).next().html());
+						jQuery(this).next().toggle().load('', 'tracefile=' + jQuery(this).data('tracefile'));
 					});
-					$('#code-tracer > li > ul > li').each(function(i, el){
-						var len = $(this).find('> ul > li').length;
-						len > 3 && $(this).find('span:first').html($(this).find('span:first').html() + " (" + len + ")");
+					jQuery('#code-tracer > li > ul > li > ul > li').each(function(i, el){
+						var len = jQuery(this).find('> ul > li').length;
+						len > 3 && jQuery(this).find('span:first').html(jQuery(this).find('span:first').html() + " (" + len + ")");
 					});
-					$('body').css('overflow', 'auto');
+					// Magento specific rules;
+					jQuery('body').css('overflow', 'auto');
+					jQuery('[onclick*="profiler_section"]').click(function(e){ e.preventDefault(); $(this).next().slideToggle('slow'); });
 				});
 			</script>
 			<?php
