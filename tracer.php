@@ -28,17 +28,18 @@ class Tracer
 	public static function init()
 	{
 		if (array_key_exists('tracefile', $_GET)) exit( highlight_file($_GET['tracefile'], true) );
-		if (array_key_exists('mirror', $_GET))
-		{
-			$cache = self::CACHE_DIR . substr(md5($_GET['mirror']), 0, 4) . '.cache';
-			file_exists($cache)
-				|| file_put_contents($cache, file_get_contents($_GET['mirror']));
-			exit( file_get_contents($cache) );
-		}
+		if (array_key_exists('mirror',    $_GET)) exit( self::getCacheFile($_GET['mirror'])      );
 		self::instance();
 		error_reporting(E_ALL|E_STRICT);
 		xdebug_start_code_coverage();
 		self::add('Environment', array('_GET'=>$_GET, '_POST'=>$_POST, '_COOKIE'=>$_COOKIE, '_SERVER'=>$_SERVER));
+	}
+
+	public static function getCacheFile($file)
+	{
+		$cache = self::CACHE_DIR . substr(md5($file), 0, 4) . '.cache';
+		file_exists($cache) || file_put_contents($cache, file_get_contents($file));
+		return file_get_contents($cache);
 	}
 	
 	/**
@@ -82,8 +83,7 @@ class Tracer
 	private static function object2array($object, $property=null)
 	{
 		if (! is_object($object)) return $object;
-		$array = preg_replace('/\w+::__set_state/', '', var_export($object, true));
-		eval('$array = ' . $array . ';');
+		$array = json_decode(json_encode($object), true);
 		return is_null($property) ? $array : $array[$property];
 	}
 
@@ -101,7 +101,7 @@ class Tracer
 				$open = $k == 'Data'?' class="open"':'';
 				switch(true)
 				{
-					case is_string($v) && file_exists($v):
+					case is_string($v) && is_file($v):
 						$string.= sprintf('<li><span class="tracefile">%s</span><div>%s</div></li>', $k, $v);
 						break;
 					case empty($v):
@@ -131,12 +131,21 @@ class Tracer
 	 */
 	public static function add($name, $data=array())
 	{
+		$name = (string) $name;
 		if (empty(self::$tracer[$name]))
 			self::$tracer[$name] = array();
 		foreach($data as $key=>$value)
 		{
 			self::$tracer[$name][$key] = $value;
 		}
+	}
+	
+	/**
+	 * @return time since REQUEST_TIME in microseconds
+	 */
+	public static function since()
+	{
+		return ceil((microtime(true) - $_SERVER['REQUEST_TIME']) * 1000);
 	}
 
 	/**
@@ -169,6 +178,10 @@ class Tracer
 					$('.tracefile').click(function(e){
 						$(this).data('tracefile') || $(this).data('tracefile', $(this).next().html());
 						$(this).next().toggle().load('', 'tracefile=' + $(this).data('tracefile'));
+					});
+					$('#code-tracer > li > ul > li').each(function(i, el){
+						var len = $(this).find('> ul > li').length;
+						len > 1 && $(this).find('span:first').html($(this).find('span:first').html() + " (" + len + ")");
 					});
 				});
 			</script>
