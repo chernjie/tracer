@@ -39,6 +39,15 @@ class Tracer
 	{
 		$cache = self::CACHE_DIR . substr(md5($file), 0, 4) . '.cache';
 		file_exists($cache) || file_put_contents($cache, file_get_contents($file));
+		switch (substr($file, strrpos($file, '.')))
+		{
+			case 'js':  case '.js':
+				header('Content-Type: application/javascript');
+				break;
+			case 'css': case '.css':
+				header('Content-Type: text/css');
+				break;
+		}
 		return file_get_contents($cache);
 	}
 	
@@ -145,7 +154,7 @@ class Tracer
 	 */
 	public static function since()
 	{
-		return ceil((microtime(true) - $_SERVER['REQUEST_TIME']) * 1000);
+		return number_format(microtime(true) - $_SERVER['REQUEST_TIME'], 3);
 	}
 
 	/**
@@ -181,8 +190,9 @@ class Tracer
 					});
 					$('#code-tracer > li > ul > li').each(function(i, el){
 						var len = $(this).find('> ul > li').length;
-						len > 1 && $(this).find('span:first').html($(this).find('span:first').html() + " (" + len + ")");
+						len > 3 && $(this).find('span:first').html($(this).find('span:first').html() + " (" + len + ")");
 					});
+					$('body').css('overflow', 'auto');
 				});
 			</script>
 			<?php
