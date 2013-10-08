@@ -30,7 +30,7 @@ class Tracer
 		if (array_key_exists('mirror',    $_GET)) exit( self::getCacheFile($_GET['mirror'])      );
 		self::instance();
 		error_reporting(E_ALL|E_STRICT);
-		xdebug_start_code_coverage();
+		function_exists('xdebug_start_code_coverage') && xdebug_start_code_coverage();
 		self::add('Environment', array('_GET'=>$_GET, '_POST'=>$_POST, '_COOKIE'=>$_COOKIE, '_SERVER'=>$_SERVER));
 	}
 
@@ -64,6 +64,8 @@ class Tracer
 	 */
 	public static function get_code_coverage()
 	{
+		if (! function_exists('xdebug_get_code_coverage'))
+			return array('xdebug is not installed, no code coverage');
 		$coverage = xdebug_get_code_coverage();
 		foreach ($coverage as $file => $line)
 		{
