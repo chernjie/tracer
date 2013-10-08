@@ -3,7 +3,7 @@ tracer
 
 PHP Runtime Tracer for debugging
 
-# Usage
+## Usage
 
 1. require or autoload `Tracer` at the top of your execution scripts, usually `index.php`. Then initialize it. Example:
 ```
