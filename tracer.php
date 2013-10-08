@@ -5,7 +5,6 @@
  *
  * @author chernjie
  * @example: call Tracer::init() at the beginning of script execution
- * @example: call Tracer::out() at the end of script execution
  * @example: call Tracer::add($name, $data) in between scripts
  */
 class Tracer
@@ -95,11 +94,48 @@ class Tracer
 	 * @param string $property
 	 * @return unknown
 	 */
-	private static function object2array($object, $property=null)
+	private static function object2array($object, $_classes = array(), $_level = 0)
 	{
 		if (! is_object($object)) return $object;
-		$array = json_decode(json_encode($object), true);
-		return is_null($property) ? $array : $array[$property];
+		// $array = preg_replace('/\w+::__set_state/', '', var_export($object, true));
+		// eval('$array = ' . $array . ';');
+		$array = array();
+		$class = get_class($object);
+		array_push($_classes, $class);
+		$reflected = new ReflectionClass($object);
+		$props = $reflected->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED);
+		foreach ($props as $prop)
+		{
+			$prop->setAccessible(true);
+			switch(true)
+			{
+				case $prop->isPrivate():
+					$name = $prop->getName() . ':private';
+					break;
+				case $prop->isProtected():
+					$name = $prop->getName() . ':protected';
+					break;
+				case $prop->isPublic():
+					$name = $prop->getName();
+					break;
+				case $prop->isStatic():
+					$name = $prop->getName() . ':static';
+					break;
+				default:
+					$name = $prop->getName() . '?';
+					break;
+			}
+			$value = $prop->getValue($object);
+			if (is_object($value))
+			{
+				$name .= ': ' . get_class($value);
+				$value = in_array(get_class($value), $_classes) || $_level > 10
+					? get_class($value)
+					: self::object2array($value, $_classes, $_level + 1);
+			}
+			$array[$name] = $value;
+		}
+		return $array;
 	}
 
 	/**
@@ -110,7 +146,12 @@ class Tracer
 	private static function array2ulli($arr, $path='')
 	{
 		$string = '<ul>';
-		if(is_array( $arr))
+		if (count(explode('/', $path)) > 5)
+		{
+			$string.= '<li style="color:red;">Nesting level too deep</li>';
+		}
+		else if (is_array($arr))
+		{
 			foreach($arr as $k=>$v)
 			{
 				$open = $k == 'Data'?' class="open"':'';
@@ -127,7 +168,7 @@ class Tracer
 						break;
 					case is_object($v):
 						$string.= sprintf('<li><span>%s: %s</span>%s</li>', $k, get_class($v)
-							, self::array2ulli(self::object2array($v, 'definition'===$k?'definition':null), $path.'/'.$k)
+							, self::array2ulli(self::object2array($v), $path.'/'.$k)
 						);
 						break;
 					default:
@@ -135,6 +176,7 @@ class Tracer
 						break;
 				}
 			}
+		}
 		else
 			$string.= '<li>'.highlight_string('<'.'?php '."\n".var_export($arr,true), true).'</li>';
 		return $string.'</ul>';
