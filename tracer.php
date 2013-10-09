@@ -95,7 +95,8 @@ class Tracer
 	/**
 	 * @param stdClass $object
 	 * @param string $property
-	 * @return unknown
+	 * @return array
+	 * @todo not all objects are the same even if they are instantiated from the same class
 	 */
 	private static function object2array($object, $_classes = array(), $_level = 0)
 	{
@@ -106,7 +107,7 @@ class Tracer
 		$class = get_class($object);
 		array_push($_classes, $class);
 		$reflected = new ReflectionClass($object);
-		$props = $reflected->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED);
+		$props = $reflected->getProperties();
 		foreach ($props as $prop)
 		{
 			$prop->setAccessible(true);
@@ -213,7 +214,7 @@ class Tracer
 	 */
 	public function __destruct()
 	{
-		self::add('get_declared_classes', array_diff(get_declared_classes(), $this->classes));
+		self::add('Declared Classes', array_diff(get_declared_classes(), $this->classes));
 		self::add(self::CODE_COVERAGE, self::get_code_coverage());
 		if ( PHP_SAPI == 'cli' )
 		{
