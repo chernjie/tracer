@@ -12,6 +12,7 @@ class Tracer
 	public static $tracer = array();
 	const CODE_COVERAGE = 'Code Coverage';
 	const CACHE_DIR     = './';
+	private $classes = array();
 
 	private static $instance = null;
 	public static function instance()
@@ -28,7 +29,7 @@ class Tracer
 	{
 		if (array_key_exists('tracefile', $_GET)) exit( highlight_file($_GET['tracefile'], true) );
 		if (array_key_exists('mirror',    $_GET)) exit( self::getCacheFile($_GET['mirror'])      );
-		self::instance();
+		self::instance()->classes = get_declared_classes();
 		error_reporting(E_ALL|E_STRICT);
 		function_exists('xdebug_start_code_coverage') && xdebug_start_code_coverage();
 		self::add('Environment', array('_GET'=>$_GET, '_POST'=>$_POST, '_COOKIE'=>$_COOKIE, '_SERVER'=>$_SERVER));
@@ -212,6 +213,7 @@ class Tracer
 	 */
 	public function __destruct()
 	{
+		self::add('get_declared_classes', array_diff(get_declared_classes(), $this->classes));
 		self::add(self::CODE_COVERAGE, self::get_code_coverage());
 		if ( PHP_SAPI == 'cli' )
 		{
