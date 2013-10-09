@@ -109,31 +109,31 @@ class Tracer
 		foreach ($props as $prop)
 		{
 			$prop->setAccessible(true);
-			switch(true)
-			{
-				case $prop->isPrivate():
-					$name = $prop->getName() . ':private';
-					break;
-				case $prop->isProtected():
-					$name = $prop->getName() . ':protected';
-					break;
-				case $prop->isPublic():
-					$name = $prop->getName();
-					break;
-				case $prop->isStatic():
-					$name = $prop->getName() . ':static';
-					break;
-				default:
-					$name = $prop->getName() . '?';
-					break;
-			}
+			$name = $prop->getName();
 			$value = $prop->getValue($object);
 			if (is_object($value))
 			{
-				$name .= ': ' . get_class($value);
+				$name .= ':' . get_class($value);
 				$value = in_array(get_class($value), $_classes) || $_level > 10
 					? get_class($value)
 					: self::object2array($value, $_classes, $_level + 1);
+			}
+			switch (true)
+			{
+				case $prop->isPrivate():
+					$name .= ':private';
+					break;
+				case $prop->isProtected():
+					$name .= ':protected';
+					break;
+				case $prop->isPublic():
+					break;
+				case $prop->isStatic():
+					$name .= ':static';
+					break;
+				default:
+					$name .= '?';
+					break;
 			}
 			$array[$name] = $value;
 		}
