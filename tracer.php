@@ -233,7 +233,7 @@ class Tracer
 				</li>
 			</ul>
 			<link rel="stylesheet" href="?mirror=https://raw.github.com/jzaefferer/jquery-treeview/master/jquery.treeview.css" />
-		    <script type="text/javascript">window.jQuery || document.write('<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"><\/script>')</script>
+		    <script type="text/javascript">window.jQuery || document.write('<script src="?mirror=http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"><\/script>')</script>
 			<script type="text/javascript" src="?mirror=https://raw.github.com/carhartl/jquery-cookie/master/jquery.cookie.js"></script>
 			<script type="text/javascript" src="?mirror=https://raw.github.com/jzaefferer/jquery-treeview/master/jquery.treeview.js"></script>
 			<script type="text/javascript">
