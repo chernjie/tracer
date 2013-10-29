@@ -237,7 +237,8 @@ class Tracer
 			<script type="text/javascript" src="?mirror=https://raw.github.com/carhartl/jquery-cookie/master/jquery.cookie.js"></script>
 			<script type="text/javascript" src="?mirror=https://raw.github.com/jzaefferer/jquery-treeview/master/jquery.treeview.js"></script>
 			<script type="text/javascript">
-				jQuery(document).ready(function(){
+				jQuery.noConflict();
+				jQuery(document).ready(function($){
 					jQuery("#code-tracer").treeview({collapsed: true,persist: "cookie"});
 					jQuery('.tracefile').next().hide();
 					jQuery('.tracefile').click(function(e){
