@@ -217,7 +217,8 @@ class Tracer
 	public function __destruct()
 	{
 		self::add('Declared Classes', array_diff(get_declared_classes(), $this->classes));
-		self::add('Defined Functions', array_diff(get_defined_functions(), $this->functions));
+		$arr = get_defined_functions();
+		self::add('Defined Functions', $arr['user']);
 		self::add(self::CODE_COVERAGE, self::get_code_coverage());
 		if ( PHP_SAPI == 'cli' )
 		{
