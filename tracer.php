@@ -221,6 +221,14 @@ class Tracer
 		$arr = get_defined_functions();
 		self::add('Defined Functions', $arr['user']);
 		self::add(self::CODE_COVERAGE, self::get_code_coverage());
+		if (array_key_exists('tracelog', $_GET))
+		{
+			array_walk_recursive(self::$tracer, array(__CLASS__, 'object2array'));
+			$this->writeDirectory = dirname($_SERVER['SCRIPT_FILENAME']) . DIRECTORY_SEPARATOR . 'tracer';
+			is_writable($this->writeDirectory) || mkdir($this->writeDirectory);
+			file_put_contents($this->writeDirectory . DIRECTORY_SEPARATOR . microtime(true) . '.json', json_encode(self::$tracer));
+		}
+		else
 		if ( PHP_SAPI == 'cli' )
 		{
 			array_walk_recursive(self::$tracer, array(__CLASS__, 'object2array'));
