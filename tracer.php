@@ -11,7 +11,7 @@ class Tracer
 {
 	public static $tracer = array();
 	const CODE_COVERAGE = 'Code Coverage';
-	const CACHE_DIR     = './';
+	const CACHE_DIR     = '/var/tmp/tracer';
 	private $classes = array();
 	private $functions = array();
 
@@ -39,6 +39,7 @@ class Tracer
 
 	public static function getCacheFile($file)
 	{
+		is_writable(self::CACHE_DIR) || mkdir(self::CACHE_DIR);
 		$cache = self::CACHE_DIR . substr(md5($file), 0, 4) . '.cache';
 		file_exists($cache) || file_put_contents($cache, file_get_contents($file));
 		switch (substr($file, strrpos($file, '.')))
